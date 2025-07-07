@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Demucs Result{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg border-light">
+  <div class="card-body">
+    <h2 class="card-title text-center mb-4">✅ Hasil Demucs</h2>
+
+    {% if result.error %}
+      <div class="alert alert-danger">
+        <strong>❌ Gagal:</strong> {{ result.error }}
+      </div>
+    {% else %}
+      <ul class="list-group mb-4">
+        <li class="list-group-item bg-dark text-light border-secondary">
+          📁 Folder Input: <code>{{ result.folder_path }}</code>
+        </li>
+        <li class="list-group-item bg-dark text-light border-secondary">
+          🎵 Total File: <strong>{{ result.total_files }}</strong>
+        </li>
+        <li class="list-group-item bg-dark text-light border-secondary">
+          ✅ Berhasil Diproses: <strong class="text-success">{{ result.processed_files }}</strong>
+        </li>
+        <li class="list-group-item bg-dark text-light border-secondary">
+          📦 Folder Output: <code>{{ result.output_folder }}</code>
+        </li>
+        <li class="list-group-item bg-dark text-light border-secondary">
+          📜 Log: <a href="{{ url_for('static', filename='logs/demucs_output.txt') }}" target="_blank" class="link-info">Lihat Log</a>
+        </li>
+      </ul>
+
+      <div class="d-grid">
+        <a href="/" class="btn btn-primary btn-lg">🔙 Kembali ke Home</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

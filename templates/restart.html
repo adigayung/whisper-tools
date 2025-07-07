@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}♻️ Restarting...{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+  <h2 class="mb-4">♻️ Sedang Merestart Server...</h2>
+  <div class="spinner-border text-light" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p class="mt-3 text-muted">Anda akan diarahkan ke beranda setelah restart selesai.</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Redirect ke halaman utama setelah 5 detik
+  setTimeout(function() {
+    window.location.href = "/";
+  }, 5000);
+</script>
+{% endblock %}

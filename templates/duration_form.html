@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}⏱️ Audio Duration Calculator{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg bg-secondary bg-gradient border-light">
+  <div class="card-body">
+    <h2 class="card-title text-center mb-4">⏱️ Audio Duration Calculator</h2>
+    <form method="post" action="/audiodurationcalculator">
+      <div class="mb-3">
+        <label for="folder_path" class="form-label">Folder Path</label>
+        <input type="text" class="form-control" id="folder_path" name="folder_path"
+               placeholder="e.g., K:\\dataset_wav\\" required>
+      </div>
+      <div class="d-grid">
+        <button type="submit" class="btn btn-primary btn-lg">🔍 Hitung</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if error %}
+  <div class="alert alert-danger mt-4">{{ error }}</div>
+{% endif %}
+
+{% if duration %}
+<div class="card mt-4 shadow bg-success border-light text-light">
+  <div class="card-body">
+    <h4 class="card-title">📊 Hasil Perhitungan</h4>
+    <p><strong>Folder:</strong> {{ folder }}</p>
+    <p><strong>Total Durasi:</strong> {{ "%.2f"|format(duration / 3600) }} jam</p>
+    <p><strong>Total Detik:</strong> {{ "%.0f"|format(duration) }} detik</p>
+    <p><strong>Jumlah File:</strong> {{ file_count }} file</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

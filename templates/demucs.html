@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}🎧 Demucs Splitter{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg bg-secondary bg-gradient border-light">
+  <div class="card-body">
+    <h2 class="card-title text-center mb-4">🎧 Demucs Batch Processor</h2>
+    <form method="post" action="/demucs">
+      
+      <!-- Folder Path -->
+      <div class="mb-4">
+        <label for="folder_path" class="form-label fw-semibold">📁 Folder Path</label>
+        <input type="text" class="form-control" id="folder_path" name="folder_path"
+               placeholder="e.g., K:\\music_batch\\" required>
+      </div>
+
+      <!-- Stem Selection -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold">🎚️ Pilih Stem Output</label>
+        <div class="row">
+          <div class="col-sm-6 col-md-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="stems" value="vocals" id="stem_vocals" checked>
+              <label class="form-check-label" for="stem_vocals">Vocals</label>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="stems" value="drums" id="stem_drums">
+              <label class="form-check-label" for="stem_drums">Drums</label>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="stems" value="bass" id="stem_bass">
+              <label class="form-check-label" for="stem_bass">Bass</label>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="stems" value="other" id="stem_other">
+              <label class="form-check-label" for="stem_other">Other</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Device Selection -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold">🖥️ Gunakan Device</label>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="device" value="cuda" id="device_cuda" checked>
+          <label class="form-check-label" for="device_cuda">GPU (CUDA)</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="device" value="cpu" id="device_cpu">
+          <label class="form-check-label" for="device_cpu">CPU</label>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="d-grid">
+        <button type="submit" class="btn btn-primary btn-lg">🧪 Jalankan Demucs</button>
+      </div>
+      
+    </form>
+  </div>
+</div>
+
+{% if result %}
+  <div class="card mt-4 shadow bg-success border-light text-light">
+    <div class="card-body">
+      <h4 class="card-title">📊 Hasil</h4>
+      <p><strong>Total File:</strong> {{ result.total_files }}</p>
+      <p><strong>Berhasil Diproses:</strong> {{ result.processed_files }}</p>
+      <p><strong>Log Output:</strong> <a href="/static/logs/demucs_output.txt" target="_blank" class="text-info">📄 Lihat Log</a></p>
+    </div>
+  </div>
+{% elif error %}
+  <div class="alert alert-danger mt-4">
+    ❌ {{ error }}
+    <br><a href="/static/logs/demucs_output.txt" target="_blank" class="text-warning">📄 Cek Log</a>
+  </div>
+{% endif %}
+
+{% endblock %}

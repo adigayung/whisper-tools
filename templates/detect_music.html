@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Deteksi Musik{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-3">🔍 Deteksi dan Hapus File</h2>
+<form method="post">
+  <div class="mb-3">
+    <label for="path" class="form-label">
+      Folder Audio:
+      <a href="#" data-bs-toggle="modal" data-bs-target="#musicCleanerInfoModal" class="ms-2 text-decoration-none">
+        ❓
+      </a>
+    </label>
+    <input type="text" class="form-control" name="path" id="path" placeholder="Masukkan path folder audio" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="language" class="form-label">Target Bahasa:</label>
+    <select class="form-select" name="language" id="language">
+        {% include "partials/country.html" %}
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-danger">Mulai Filter</button>
+</form>
+
+  {% if results %}
+  <hr>
+  <h4 class="mt-4">Hasil Deteksi:</h4>
+  <ul class="list-group">
+    {% for file, status in results %}
+    <li class="list-group-item">
+      <strong>{{ status }}:</strong> {{ file }}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <!-- ✅ Modal ditempatkan DI DALAM block content -->
+    <div class="modal fade" id="musicCleanerInfoModal" tabindex="-1" aria-labelledby="musicCleanerInfoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light">
+        <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title" id="musicCleanerInfoLabel">⚠️ Perhatian</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+            <p>
+            Fitur ini akan <strong>menghapus seluruh file audio</strong> (.mp3 / .wav) dari folder yang Anda pilih, jika terdeteksi sebagai <strong>musik atau nyanyian</strong>.
+            </p>
+            <p>
+            Ini <strong>bukan fitur pemisah musik</strong> seperti Demucs. File tidak dipisah, tapi langsung dihapus. Harap hati-hati saat menggunakan fitur ini!
+            </p>
+            <p class="mb-0">
+            <strong>Target Bahasa</strong> digunakan sebagai acuan: hanya audio dengan bahasa tersebut yang akan dipertahankan. Semua file dengan bahasa lain, serta musik instrumental atau nyanyian, akan dihapus otomatis.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+        </div>
+    </div>
+    </div>
+
+</div>
+{% endblock %}

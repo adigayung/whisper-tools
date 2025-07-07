@@ -1,0 +1,8 @@
+{
+  "device": "cuda",
+  "compute_type": "float16",
+  "model_size": "large-v3",
+  "use_faster_whisper": true,
+  "use_batch_mode": true,
+  "batch_size": 24
+}

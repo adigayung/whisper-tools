@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}🎧 Normalize & Merge Audio{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg bg-secondary bg-gradient border-light">
+  <div class="card-body">
+    <h2 class="card-title text-center mb-4">🎧 Normalize & Merge Audio</h2>
+      <form method="post" action="/normalize-merge">
+        <div class="mb-3">
+          <label for="folder_path" class="form-label">Folder Path</label>
+          <input type="text" class="form-control" id="folder_path" name="folder_path"
+                placeholder="e.g., K:\\dataset\\raw_audio\\" required>
+        </div>
+
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="normalize" name="normalize" checked>
+          <label class="form-check-label" for="normalize">
+            🔊 Normalize Audio (dengan loudness target -20 LUFS)
+          </label>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary btn-lg">🚀 Proses</button>
+        </div>
+      </form>
+
+  </div>
+</div>
+
+{% if result %}
+  {% if result.error %}
+  <div class="alert alert-danger mt-4">
+    ❌ {{ result.error }}
+  </div>
+  {% else %}
+  <div class="card mt-4 shadow bg-success border-light text-light">
+    <div class="card-body">
+      <h4 class="card-title">✅ Proses Berhasil</h4>
+      <p><strong>Folder Output:</strong> {{ result.normalized_folder }}</p>
+      <p><strong>Jumlah File Normalized:</strong> {{ result.file_count }}</p>
+      <p><strong>Gabungan File:</strong> {{ result.output_path }}</p>
+    </div>
+  </div>
+  {% endif %}
+{% endif %}
+{% endblock %}
