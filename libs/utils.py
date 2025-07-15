@@ -27,3 +27,15 @@ def convert_to_mono_22050(wav_path):
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     os.replace(temp_path, wav_path)
     
+def convert_to_mono_24000(wav_path):
+    temp_path = wav_path.replace(".wav", "_converted.wav")
+    cmd = [
+        "ffmpeg", "-y",
+        "-i", wav_path,
+        "-ac", "1",              # mono
+        "-ar", "24000",          # 22050 Hz
+        temp_path
+    ]
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    os.replace(temp_path, wav_path)
+    

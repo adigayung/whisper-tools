@@ -2,9 +2,11 @@ import os
 import subprocess
 import shutil
 from libs.print_log import log_print
-from libs.utils import convert_to_mono_22050
+from libs.utils import convert_to_mono_24000
+from libs.denoise import denoise
 
-def run_demucs_batch(input_folder, log_path="demucs_output.txt", selected_stems=None, debug=False, device_id="cuda"):
+
+def run_demucs_batch(input_folder, log_path="demucs_output.txt", selected_stems=None, debug=False, use_denoise=True, device_id="cuda"):
     import os
     import shutil
     import subprocess
@@ -35,7 +37,12 @@ def run_demucs_batch(input_folder, log_path="demucs_output.txt", selected_stems=
     os.makedirs(output_folder, exist_ok=True)
 
     log_print(f"🔎 Menemukan {len(files)} file audio, memulai proses demucs...", "INFO", debug)
-
+    if use_denoise:
+        from df.enhance import init_df
+        import torch
+        import gc
+        df_model, df_state, _ = init_df(model_base_dir="DeepFilterNet3")
+        log_print("🎧 Memulai proses denoise...", "INFO", debug)
     with open(log_path, "w", encoding="utf-8") as log_file:
         for idx, file in enumerate(files, start=1):
             full_path = os.path.join(input_folder, file)
@@ -75,7 +82,12 @@ def run_demucs_batch(input_folder, log_path="demucs_output.txt", selected_stems=
                         new_name = f"{file_name}_{stem_name}.wav"
                         stem_dst = os.path.join(output_folder, new_name)
                         shutil.move(stem_src, stem_dst)
-                        convert_to_mono_22050(stem_dst)
+                        convert_to_mono_24000(stem_dst)
+
+                        # ⬇️ Tambahkan proses denoise dan timpa file
+                        if use_denoise:
+                            denoise(stem_dst, df_model, df_state, is_replace=True)
+
                         log_print(f"      ✔ Hasil: {new_name}", "SUCCESS", debug)
                     shutil.rmtree(separated_dir, ignore_errors=True)
                     success_count += 1
@@ -85,7 +97,12 @@ def run_demucs_batch(input_folder, log_path="demucs_output.txt", selected_stems=
             except Exception as e:
                 log_print(f"      ❌ Exception saat memproses {file}: {e}", "ERROR", debug)
                 log_file.write(f"❌ Exception: {e}\n")
-
+    if use_denoise:
+        del df_model
+        del df_state
+        torch.cuda.empty_cache()
+        gc.collect()
+        print("🧹 Model dibersihkan dari memori.")
     htdemucs_folder = os.path.join(output_folder, "htdemucs")
     if os.path.exists(htdemucs_folder):
         shutil.rmtree(htdemucs_folder, ignore_errors=True)

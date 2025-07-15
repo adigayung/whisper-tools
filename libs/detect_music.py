@@ -11,10 +11,7 @@ from libs.print_log import log_print
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-# Inisialisasi model whisper biasa
-panns_model = AudioTagging(device="cuda")
-
-def check_panns_model(file_path):
+def check_panns_model(file_path, panns_model):
     try:
         waveform, sr = torchaudio.load(file_path, normalize=True)
         if sr != 16000:
@@ -32,7 +29,7 @@ def check_panns_model(file_path):
         log_print(f"[❌] Gagal deteksi dengan PANNs: {file_path} - {e}")
         return False
 
-def is_music(audio_path, language="id"):
+def is_music(audio_path, panns_model, language="id"):
     try:
         result = model.transcribe(audio_path, fp16=False)
         full_text = result.get("text", "").strip().lower()
@@ -47,7 +44,7 @@ def is_music(audio_path, language="id"):
             return True
         if full_text.startswith("sub indo by"):
             return True
-        if check_panns_model(audio_path):
+        if check_panns_model(audio_path, panns_model):
             return True
         return False
     except Exception as e:
@@ -75,6 +72,7 @@ def create_audio_preview(file_path, duration_seconds=8):
 
 
 def detect_music_folder(path, language="id"):
+    import torch
     audio_files = [
         os.path.join(root, f)
         for root, _, files in os.walk(path)
@@ -82,12 +80,13 @@ def detect_music_folder(path, language="id"):
         if os.path.splitext(f)[1].lower() in [".mp3", ".wav"]
     ]
     hasil = []
+    panns_model = AudioTagging(device="cuda")
     for i, file in enumerate(audio_files, 1):
         log_print(f"[{i}/{len(audio_files)}] Proses: {os.path.basename(file)}")
         preview = create_audio_preview(file)
         if not preview:
             continue
-        if is_music(preview, language=language):
+        if is_music(preview, panns_model, language=language):
             os.remove(preview)
             os.remove(file)
             hasil.append((file, "Dihapus (Musik)"))
@@ -95,4 +94,8 @@ def detect_music_folder(path, language="id"):
             os.remove(preview)
             hasil.append((file, "Disimpan (Bukan Musik)"))
     gc.collect()
+    del panns_model
+    torch.cuda.empty_cache()
+    gc.collect()
+
     return hasil

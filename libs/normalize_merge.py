@@ -5,13 +5,13 @@ from pydub import AudioSegment
 from pydub.utils import which
 from libs.print_log import log_print
 
-AudioSegment.converter = which("ffmpeg")
-target_lufs = "-20"
-
 def normalize_and_merge(input_folder, normalize=True, debug=False):
     if not os.path.isdir(input_folder):
         log_print(f"❌ Folder tidak ditemukan: {input_folder}", "ERROR", debug)
         return {"error": f"Folder tidak ditemukan: {input_folder}"}
+
+    AudioSegment.converter = which("ffmpeg")
+    target_lufs = "-20"
 
     normalized_folder = os.path.join(input_folder, "hasil_enhanced_loud")
     os.makedirs(normalized_folder, exist_ok=True)
