@@ -66,3 +66,14 @@ GUI improvements with drag & drop
 
 Pull requests and suggestions are welcome! 💡
 
+🌍 Run via Ngrok (Public Access)
+To expose the Flask server publicly via Ngrok, use the --NGROK_AUTH_TOKEN= argument:
+```bash
+python main.py --NGROK_AUTH_TOKEN=your_ngrok_token_here
+```
+This will start the server and print a public Ngrok URL, such as:
+```bash
+https://abcd-1234.ngrok.io
+```
+You can get your Ngrok token from:
+👉 [https://dashboard.ngrok.com/get-started/setup](https://dashboard.ngrok.com/get-started/setup)
