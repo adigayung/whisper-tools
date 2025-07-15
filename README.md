@@ -44,6 +44,8 @@ All tools are available through a unified Flask web interface.
 
 Start the application with:
 ```bash
+git clone https://github.com/adigayung/whisper-tools.git
+cd whisper-tools
 python main.py
 ```
 Then open your browser and go to:
