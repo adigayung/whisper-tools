@@ -41,9 +41,11 @@
     </div>
     <a href="/" class="{% if request.path == '/' %}active{% endif %}">🎙️ Splitter</a>
     <a href="/normalize-merge" class="{% if request.path.startswith('/normalize-merge') %}active{% endif %}">🎧 Normalize + Merge</a>
-    <a href="/audiodurationcalculator" class="{% if request.path.startswith('/audiodurationcalculator') %}active{% endif %}">⏱️ Audio Duration Calculator</a>
+    <a href="/Denoise" class="{% if request.path.startswith('/Denoise') %}active{% endif %}">🛠️ Denoise Audio</a>
     <a href="/demucs" class="{% if request.path.startswith('/demucs') %}active{% endif %}">🎼 Demucs Splitter</a>
+    <a href="/audiodurationcalculator" class="{% if request.path.startswith('/audiodurationcalculator') %}active{% endif %}">⏱️ Audio Duration Calculator</a>
     <a href="/detect_music" class="{% if request.path.startswith('/detect_music') %}active{% endif %}">🧹 Clean Music Files</a>
+    <a href="/check_metadata" class="{% if request.path.startswith('/check_metadata') %}active{% endif %}">📑 Metadata Checker</a>
   </nav>
 
   <!-- Main content area -->

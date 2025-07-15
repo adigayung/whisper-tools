@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">🔍 Metadata vs Audio Checker</h2>
+
+    <form method="POST" class="mb-4">
+        <div class="mb-3">
+            <label for="metadata_path" class="form-label">📄 Path Metadata File:</label>
+            <input type="text" class="form-control" id="metadata_path" name="metadata_path" required>
+        </div>
+        <div class="mb-3">
+            <label for="wav_path" class="form-label">🎧 Path Folder WAV:</label>
+            <input type="text" class="form-control" id="wav_path" name="wav_path" required>
+        </div>
+        <button type="submit" class="btn btn-primary">✅ Check</button>
+    </form>
+
+    {% if result %}
+        {% if result.error %}
+            <div class="alert alert-danger" role="alert">
+                ⚠️ {{ result.error }}
+            </div>
+        {% else %}
+            <div class="mb-3">
+                <span class="badge bg-info text-dark">Total Metadata Entries: {{ result.total_metadata }}</span>
+                <span class="badge bg-info text-dark">Total WAV Files: {{ result.total_wav }}</span>
+            </div>
+
+            <div class="mb-4">
+                <h5>❌ Metadata tapi tidak ada file:</h5>
+                {% if result.missing_in_folder %}
+                    <ul class="list-group">
+                        {% for item in result.missing_in_folder %}
+                            <li class="list-group-item list-group-item-warning">{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="alert alert-success" role="alert">
+                        ✅ Semua file dalam metadata ditemukan di folder WAV.
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <h5>❌ File WAV tapi tidak ada di metadata:</h5>
+                {% if result.missing_in_metadata %}
+                    <ul class="list-group">
+                        {% for item in result.missing_in_metadata %}
+                            <li class="list-group-item list-group-item-danger">{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="alert alert-success" role="alert">
+                        ✅ Semua file WAV sudah dicantumkan di metadata.
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

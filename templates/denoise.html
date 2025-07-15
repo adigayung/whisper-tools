@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}🔉 Denoise Audio{% endblock %}
+
+{% block content %}
+<div class="card shadow-lg bg-secondary bg-gradient border-light">
+  <div class="card-body">
+    <h2 class="card-title text-center mb-4">🔉 Proses Denoise Audio</h2>
+    <form method="post" action="/Denoise">
+      <div class="mb-3">
+        <label for="folder_path" class="form-label">📁 Folder Path</label>
+        <input type="text" class="form-control" id="folder_path" name="folder_path"
+               placeholder="Contoh: K:\\dataset_wav\\" required>
+      </div>
+
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success btn-lg">🚀 Mulai Denoise</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if error %}
+  <div class="alert alert-danger mt-4">{{ error }}</div>
+{% endif %}
+
+{% if result %}
+  <div class="alert alert-success mt-4">
+    ✅ {{ result }}
+  </div>
+{% endif %}
+{% endblock %}
