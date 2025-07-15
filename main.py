@@ -5,6 +5,7 @@ import os
 import sys
 import time
 import threading
+from libs.utils import find_free_port
 from libs.split_wav import start_split_wav
 from libs.hitung_time_sample import get_total_duration
 from libs.normalize_merge import normalize_and_merge
@@ -12,7 +13,11 @@ from libs.demucs_misc import run_demucs_batch
 from libs.detect_music import detect_music_folder
 from libs.batch_denoise import run_batch_denoise
 from libs.check_metadata import check_metadata_vs_files
+import torch
+import gc
 
+WHISPER_MODELS = None
+WHISPER_MODELS_LOAD_COUNT = 0
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "whispertools2025")
 
@@ -39,7 +44,24 @@ def get_log():
 
 @app.route("/process", methods=["POST"])
 def process():
-    result = start_split_wav(request.form, DEBUG_MODE)
+    from libs.shared_model import get_whisper_model
+    global WHISPER_MODELS, WHISPER_MODELS_LOAD_COUNT
+    if WHISPER_MODELS_LOAD_COUNT == 0:
+        WHISPER_MODELS_LOAD_COUNT = WHISPER_MODELS_LOAD_COUNT + 1
+        whisper_model_name = request.form.get("model")
+        WHISPER_MODELS = get_whisper_model(whisper_model_name)
+    
+    result = start_split_wav(request.form, DEBUG_MODE, whisper_model=WHISPER_MODELS)
+    WHISPER_MODELS_LOAD_COUNT = max(0, WHISPER_MODELS_LOAD_COUNT - result.get("inc", 0))
+
+    if WHISPER_MODELS_LOAD_COUNT == 0:
+        try:
+            del WHISPER_MODELS
+            WHISPER_MODELS = None
+            torch.cuda.empty_cache()
+            gc.collect()
+        except:
+            pass
     return jsonify(result)
 
 @app.route("/audiodurationcalculator", methods=["GET", "POST"])
@@ -155,17 +177,6 @@ def detect_music():
             results = detect_music_folder(path, language=selected_lang)
 
     return render_template("detect_music.html", results=results, selected_lang=selected_lang)
-
-def find_free_port(start=8000, end=90000):
-    import socket
-    for port in range(start, end):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.bind(("127.0.0.1", port))
-                return port
-            except OSError:
-                continue
-    raise RuntimeError("❌ Tidak ada port bebas antara 8000 sampai 90000.")
 
 if __name__ == "__main__":
     import argparse
