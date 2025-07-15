@@ -7,3 +7,5 @@ torch==2.0.1+cu118
 whisper==1.1.10
 demucs
 panns-inference
+deepfilternet
+pyngrok
