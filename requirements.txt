@@ -5,6 +5,7 @@ pydub==0.25.1
 torchaudio==2.0.0+cu118
 torch==2.0.1+cu118
 whisper==1.1.10
+faster-whisper
 demucs
 panns-inference
 deepfilternet
