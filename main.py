@@ -1,3 +1,4 @@
+# file: main.py
 from flask import Flask, request, render_template, jsonify, redirect, session
 import json
 import os
@@ -9,6 +10,8 @@ from libs.hitung_time_sample import get_total_duration
 from libs.normalize_merge import normalize_and_merge
 from libs.demucs_misc import run_demucs_batch
 from libs.detect_music import detect_music_folder
+from libs.batch_denoise import run_batch_denoise
+from libs.check_metadata import check_metadata_vs_files
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "whispertools2025")
@@ -81,12 +84,14 @@ def demucs():
         folder_path = request.form.get("folder_path")
         selected_stems = request.form.getlist("stems")
         device_id = request.form.get("device", "cuda")
+        use_denoise = request.form.get("use_denoise") == "1"
 
         # Simpan ke session atau kirim via redirect
         session["demucs_data"] = {
             "folder_path": folder_path,
             "selected_stems": selected_stems,
-            "device_id": device_id
+            "device_id": device_id,
+            "use_denoise": use_denoise
         }
 
         return redirect("/demucs-progress")
@@ -96,18 +101,48 @@ def demucs():
 @app.route("/demucs-progress")
 def demucs_progress():
     data = session.pop("demucs_data", None)
+
     if not data:
         return redirect("/demucs")
-
     result = run_demucs_batch(
         input_folder=data["folder_path"],
         selected_stems=data["selected_stems"],
         device_id=data["device_id"],
+        use_denoise=data["use_denoise"],
         debug=DEBUG_MODE
     )
 
     return render_template("demucs_result.html", result=result)
 
+@app.route("/Denoise", methods=["GET", "POST"])
+def denoise_page():
+    if request.method == "POST":
+        folder = request.form.get("folder_path")
+        if not os.path.isdir(folder):
+            return render_template("denoise.html", error="Folder tidak ditemukan!")
+
+        result = run_batch_denoise(folder, debug=True, is_replace=False)  # ✅ Panggil fungsinya langsung
+
+        if "error" in result:
+            return render_template("denoise.html", error=result["error"])
+
+        return render_template("denoise.html", result=f"Berhasil memproses {result['processed_files']} dari {result['total_files']} file.")
+
+    return render_template("denoise.html")
+
+@app.route("/check_metadata", methods=["GET", "POST"])
+def check_metadata():
+    result = None
+    if request.method == "POST":
+        metadata_path = request.form.get("metadata_path", "").strip()
+        wav_path = request.form.get("wav_path", "").strip()
+
+        if os.path.isfile(metadata_path) and os.path.isdir(wav_path):
+            result = check_metadata_vs_files(metadata_path, wav_path)
+        else:
+            result = {"error": "Path metadata atau folder WAV tidak valid."}
+
+    return render_template("metadata_checker.html", result=result)
 @app.route("/detect_music", methods=["GET", "POST"])
 def detect_music():
     results = []
@@ -121,6 +156,37 @@ def detect_music():
 
     return render_template("detect_music.html", results=results, selected_lang=selected_lang)
 
+def find_free_port(start=8000, end=90000):
+    import socket
+    for port in range(start, end):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("127.0.0.1", port))
+                return port
+            except OSError:
+                continue
+    raise RuntimeError("❌ Tidak ada port bebas antara 8000 sampai 90000.")
 
 if __name__ == "__main__":
-    app.run(debug=FLASK_DEBUG_MODE, threaded=True)
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--NGROK_AUTH_TOKEN", type=str, default=None, help="Ngrok Auth Token (optional)")
+    args = parser.parse_args()
+
+    port = find_free_port()
+
+    if args.NGROK_AUTH_TOKEN:
+        try:
+            from pyngrok import ngrok, conf
+        except ImportError:
+            print("❌ Modul pyngrok belum terinstall. Jalankan: pip install pyngrok")
+            exit(1)
+
+        conf.get_default().auth_token = args.NGROK_AUTH_TOKEN
+        public_url = ngrok.connect(port)
+        print(f"🔗 Flask berjalan via ngrok: {public_url}")
+    else:
+        print(f"🌐 Flask berjalan di lokal: http://127.0.0.1:{port}")
+
+    app.run(port=port, debug=FLASK_DEBUG_MODE, threaded=True)
