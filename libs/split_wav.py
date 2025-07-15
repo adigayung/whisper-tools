@@ -11,7 +11,7 @@ from libs.log_writer import init_log, append_log
 from libs.print_log import log_print
 from libs.utils import load_model_config
 
-def start_split_wav(form_data, debug=False):
+def start_split_wav(form_data, debug=False, whisper_model=None):
     from libs.shared_model import get_whisper_model
 
     input_path = form_data.get("input_path")
@@ -29,7 +29,8 @@ def start_split_wav(form_data, debug=False):
         log_print("❌ Input path tidak valid atau tidak ditemukan.", "ERROR", debug)
         return {
             "status": "error",
-            "message": "Folder tidak ditemukan!"
+            "message": "Folder tidak ditemukan!",
+            "inc": 1
         }
 
     audio_files = []
@@ -45,7 +46,7 @@ def start_split_wav(form_data, debug=False):
     os.makedirs(output_path, exist_ok=True)
 
     log_print(f"Memuat model Whisper: {whisper_model_name}", "STEP", debug)
-    whisper_model = get_whisper_model(whisper_model_name)
+    #whisper_model = get_whisper_model(whisper_model_name)
 
     log_print("Memuat model VAD Silero...", "STEP", debug)
     vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad', trust_repo=True)
@@ -75,17 +76,15 @@ def start_split_wav(form_data, debug=False):
         raw_csv_files.append(metadata_path_per_raw)
 
         for ts in speech_timestamps:
+            start_time_per_segment = time.time()
             start_ms = int(ts['start'] / 16)
             end_ms = int(ts['end'] / 16)
             duration_sec = (end_ms - start_ms) / 1000
-
+            filename = f"{base_name}_{counter:04d}.wav"
             if min_dur <= duration_sec <= max_dur:
-                segment = audio[start_ms:end_ms]
-                filename = f"{base_name}_{counter:04d}.wav"
+                segment = audio[start_ms:end_ms]                
                 path = os.path.join(output_path, filename)
                 segment.export(path, format="wav")
-
-                log_print(f"   ↳ Segment {filename} | Durasi: {duration_sec:.2f}s", "INFO", debug)
 
                 try:
                     if cfg["use_faster_whisper"]:
@@ -139,7 +138,8 @@ def start_split_wav(form_data, debug=False):
 
                 preview = text[:60].strip().replace('\n', ' ')
                 log_print(f"      ✔ Transkripsi: {preview}...", "SUCCESS", debug)
-
+                start_time_per_segment_end = time.time()
+                log_print(f"   ↳ Segment {filename} | Durasi: {duration_sec:.2f}s | Processing time: {start_time_per_segment_end - start_time_per_segment:.2f}s ", "INFO", debug)
                 counter += 1
             else:
                 log_print(f"   ✘ Lewatkan segment (durasi {duration_sec:.2f}s di luar rentang)", "WARNING", debug)
@@ -184,21 +184,22 @@ def start_split_wav(form_data, debug=False):
 
     # CLEANUP
 
-    try:
-        del whisper_model
-        del vad_model
-        del read_audio
-        del get_speech_timestamps
-    except:
-        pass
+    # try:
+    #     del whisper_model
+    #     del vad_model
+    #     del read_audio
+    #     del get_speech_timestamps
+    # except:
+    #     pass
 
-    torch.cuda.empty_cache()
-    gc.collect()
+    # torch.cuda.empty_cache()
+    # gc.collect()
 
     return {
         "status": "done",
         "files_processed": total,
-        "segments_generated": counter
+        "segments_generated": counter,
+        "inc": 1
     }
 
 def natural_keys(text):

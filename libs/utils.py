@@ -38,4 +38,14 @@ def convert_to_mono_24000(wav_path):
     ]
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     os.replace(temp_path, wav_path)
-    
+
+def find_free_port(start=8000, end=90000):
+    import socket
+    for port in range(start, end):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("127.0.0.1", port))
+                return port
+            except OSError:
+                continue
+    raise RuntimeError("❌ Tidak ada port bebas antara 8000 sampai 90000.")
