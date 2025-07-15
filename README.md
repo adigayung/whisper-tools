@@ -36,6 +36,8 @@ Ensure that input/output folder structures are organized. Most tools expect `.mp
 - Install dependencies:
 
 ```bash
+git clone https://github.com/adigayung/whisper-tools.git
+cd whisper-tools
 pip install -r requirements.txt
 ```
 
@@ -44,8 +46,6 @@ All tools are available through a unified Flask web interface.
 
 Start the application with:
 ```bash
-git clone https://github.com/adigayung/whisper-tools.git
-cd whisper-tools
 python main.py
 ```
 Then open your browser and go to:
